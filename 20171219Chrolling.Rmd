@@ -1,0 +1,122 @@
+---
+title: "webscraping"
+author: "Lee JaeSeo"
+date: "2017년 12월 18일"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# 20171219 화요일
+
+### 웹스크레이핑을 이용한 영화 리뷰 텍스트 마이닝
+```{r}
+library(XML)
+```
+
+```{r}
+comment_id_sub <- ""
+movie_rating <- ""
+movie_review <- ""
+
+for(page in 1:25) {
+  this_url <- paste0("http://movie.daum.net/moviedb/grade?movieId=112943&type=netizen&page=",page)
+  doc <- htmlParse(this_url, encoding="UTF-8")
+  comment_id_sub <- xpathSApply(doc,"//em[@class='link_profile']", xmlValue)
+  movie_rating_sub <- xpathSApply(doc,"//em[@class='emph_grade']", xmlValue)
+  movie_review_sub <- xpathSApply(doc,"//p[@class='desc_review']", xmlValue)
+  movie_review_sub <- gsub("\t", "", movie_review_sub)
+  movie_review_sub <- gsub("\n", "", movie_review_sub)
+  movie_review_sub <- gsub("\r", " ", movie_review_sub)
+  movie_review_sub <- gsub('\"', "", movie_review_sub)
+  
+  comment_id_sub <- c(comment_id_sub, comment_id_sub)
+  movie_rating <- c(movie_rating, movie_rating_sub)
+  movie_review <- c(movie_review, movie_review_sub)
+}
+
+
+MovieReview <- data.frame(ID=comment_id, Rating=movie_rating, Comment=movie_review)
+```
+
+
+```{r}
+library(KoNLP)
+library(RColorBrewer)
+library(wordcloud)
+```
+
+
+```{r}
+useSejongDic()
+mergeUserDic(data.frame(c("깜놀"), c("한국외국어대학교"), c("통계"), c("학과"), c("통계학과")))
+
+longstr <- "한국외국어대학교자연과학대통계학과"
+(sapply(longstr, extractNoun, USE.NAMES = FALSE))
+
+
+noun <- sapply(movie_review, extractNoun, USE.NAMES = FALSE)
+noun2 <- unlist(noun)
+
+## remove weird noun
+noun2 <- gsub("\\^ㅎ", "", noun2)
+noun2 <- gsub("하게", "", noun2)
+noun2 <- gsub("영화", "", noun2)
+noun2 <- gsub("[[:punct:]]", "", noun2) ##특수기호 제거
+noun2 <- gsub("[[:cntrl:]]", "", noun2) ##특수문자 제거
+noun2 <- Filter(function(x) {nchar(x)>=2}, noun2)
+
+## diplay wordcloud
+par(mar=c(1,3,1,1))
+wordcount <- table(noun2)
+pal2 <- brewer.pal(5, "Accent")
+wordcloud(names(wordcount), freq=wordcount, scale=c(5,0.5), min.freq=20, random.order = F, rot.per = .1, colors = pal2)
+```
+
+### 네이버 뉴스 크롤링을 이용한 장바구니분석
+![](https://github.com/mrchypark/naverNewsParser)
+
+```{r}
+getwd()
+source("getnavernews.R",encoding="UTF-8")
+```
+
+```{r}
+#install.packages(c("arules", "igraph", "combinat"))
+library(arules)
+library(igraph)
+library(combinat)
+```
+
+```{r}
+rule <- file("./Data/dataAll.csv", encoding="UTF-8")
+rules <- readLines(rule)
+head(rules)
+
+tran <- Map(extractNoun, rules)
+tran
+tran <- unique(tran)
+tran <- sapply(tran, unique)
+tran
+tran <- sapply(tran, function(x){Filter(function(y) {nchar(y)<=4 && nchar(y)>1 && is.hangul(y)}, x)})
+tran
+
+names(tran) <- paste("Tr", 1:length(tran), sep="")
+names(tran)
+wordtran <- as(tran, "transactions")
+wordtran
+wordtab <- crossTable(wordtran)
+head(wordtab)
+
+rules <- labels(ares, ruleSep=" ")
+rules <- sapply(rules, strsplit, " ", USE.NAMES = F)
+rulemat <- do.call("rbind", rules)
+rulemat
+
+ruleg <- graph.edgelist(rulemat(-c(1:6), directed=F))
+plot.igraph(ruleg, vertex.label=V(ruleg)$name, vertex.label.cex=1, vertex.size=30,
+            layout=layout.frnchterman.reingold.grid)
+```
+
+
+
