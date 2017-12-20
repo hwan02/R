@@ -13,3 +13,5 @@ head(test1)
 fit <- factanal(test1, factors = 2, rotation = 'varimax')
 print(fit, cutoff=0.4, digits = 3)
 
+# 내가 알고 싶은 것 종속 변수 
+# 독립변수 종속 변수에 영향을 주는 것 
