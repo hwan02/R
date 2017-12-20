@@ -1,0 +1,188 @@
+---
+title: "googlemap"
+author: "Lee JaeSeo"
+date: "2017년 12월 20일"
+output: html_document
+---
+
+
+```{r}
+library(ggmap)
+```
+
+```{r}
+gc <- as.numeric(geocode(enc2utf8('서울')))
+map <- get_googlemap(center=gc, zoom=15)
+ggmap(map)
+
+map <- get_googlemap(center=gc, maptype = "roadmap", zoom=15, marker = gc)
+ggmap(map)
+```
+
+
+### 단양 관광지 mapping
+```{r}
+names <- c("1.도담상봉/석문", "2.구담/옥순봉", "3.사인암", "4.하선암", "5.중선암", "6.상선암")
+addr <- c("매포읍 삼봉로 644-33", "단성면 월악로 3827", "대강면 사인암리 64", "단성면 선암계곡로 1337", "단성면 선암계곡로 868-2", "단성면 선암계곡로 790")
+
+gc <- geocode(enc2utf8(addr))
+df <- data.frame(name = names, lon=gc$lon, lat=gc$lat)
+
+cen <- c(mean(gc$lon), mean(gc$lat))
+
+map <- get_googlemap(center=cen, zoom=11, markers = gc, maptype="roadmap")
+ggmap(map) + geom_text(data=df, aes(x=lon, y=lat), size=5, label=df$name)
+```
+
+<br>
+<br>
+
+### 타임지가 선정한 50위 이내의 미국 대학교 mapping
+```{r}
+usu_names <- c("California Institute of Technology",
+               "Stanford University", "Massachusetts Institute of Technology",
+               "Harvard University", "Princeton University", "University of Chicago",
+               "University of Pennsylvania", "Yale University", "Johns Hopkins University",
+               "Columbia University", "University of California, Los Angeles", "Duke University",
+               "University of California, Berkeley", "Cornell University", "Northwestern University",
+               "University of Michigan - Ann Arbor", "Carnegie Mellon University",
+               "University of Washington", "New York University", "University of California, San Diego",
+               "Georgia Institute of Technology", "University of Illinois At Urbana Champaign",
+               "University of Wisconsin - Madison", "University of Texas At Austin", "Brown University")
+usu_gc <- geocode(enc2utf8(usu_names))
+usu_df <- data.frame(usu_names, lon=usu_gc$lon, lat=usu_gc$lat)
+usu_cen <- c(mean(usu_df$lon), mean(usu_df$lat))
+usu_map <- get_googlemap(center=usu_cen, zoom=3, size=c(640, 280), markers = usu_gc, maptype="roadmap")
+ggmap(usu_map) + geom_text(data=usu_df, aes(lon, lat), size=3, label=usu_df$usu_names) +
+               theme(axis.text = element_blank(),
+                     axis.title = element_blank())
+```
+
+<br>
+<br>
+
+### R내장 지진데이터를 이용한 맵핑
+```{r}
+q_df <- head(quakes, 100)
+
+q_cen <- c(mean(q_df$long), mean(q_df$lat))
+q_gc <- data.frame(lon=q_df$long, lat=q_df$lat)
+q_gc$lon <- ifelse(q_gc$lon>180, -(360-q_gc$lon), q_gc$lon)
+
+q_map <- get_googlemap(center = q_cen, zoom=5, maptype="roadmap")
+ggmap(q_map, extent="device") +
+  geom_text(data=q_df, aes(long, lat, label=stations)) +
+  geom_point(data=q_df, aes(x=long, y=lat, size=mag), alpha=0.6)
+```
+
+### R내장 지진데이터를 이용한 맵핑2
+```{r}
+q_df <- head(quakes, 200)
+
+q_cen <- c(mean(q_df$long), mean(q_df$lat))
+q_gc <- data.frame(lon=q_df$long, lat=q_df$lat)
+q_gc$lon <- ifelse(q_gc$lon>180, -(360-q_gc$lon), q_gc$lon)
+
+q_map <- get_googlemap(center = q_cen, zoom=4, maptype="roadmap")
+ggmap(q_map, extent="device") +
+  geom_point(data=q_df, aes(x=long, y=lat, size=mag), alpha=0.6)
+```
+
+<br>
+<br>
+
+### 한국 지진 데이터를 이용한 맵핑
+```{r}
+kq_df <- read.csv("./Data/KEarthQuakeEx.csv")
+head(kq_df)
+
+attach(kq_df)
+kq_cen <- c(mean(kq_df$lon), mean(kq_df$lat))
+kq_gc <- data.frame(lon, lat)
+head(kq_gc)
+
+kq_map <- get_googlemap(center = kq_cen, scale=1, zoom=6, maptype = "roadmap")
+ggmap(kq_map, extent="device") +
+  geom_point(data=kq_df, aes(lon, lat, size=mag), alpha=0.5)
+detach(kq_df)
+```
+
+<br>
+<br>
+
+### 지역별 인구수 변화에 대한 워드 클라우드
+```{r}
+library(wordcloud)
+
+word<-c("인천광역시", "강화군","웅진군")
+frequency<-c(651, 85, 61)
+
+wordcloud(word, frequency, colors="blue")
+wordcloud(word, frequency, random.order=F, random.color=F, colors=rainbow(length(word)))
+# random.order=F : 빈도수가 큰 단어를 중앙에 배치
+# random.color=F : 빈도수가 큰 단어부터 지정한 색 순어로 출력
+# colors=rainbow(length(word)) : 무지개 색 팔레트로 설정
+pal2<-brewer.pal(8, "Dark2")
+# brewer.pal(8, "Dark2") : 8가지 색의 팔레트 지정
+wordcloud(word, frequency, colors=pal2)
+```
+* 교재의 brewer.pal() : 이름별 색 분포 확인하여 적용해볼 것
+
+
+### 이승만 전 대통령의 "학생제군에게" 연설문 텍스트마이닝
+```{r}
+library(KoNLP)
+library(RColorBrewer)
+library(wordcloud)
+```
+
+```{r}
+useSejongDic()
+pal2 <- brewer.pal(8, "Dark2")
+
+text <- readLines("./Data/이승만-학생제군에게.txt")
+noun <- sapply(text, extractNoun, USE.NAMES = FALSE)
+
+noun2 <- unlist(noun)
+wordcount <- table(noun2)
+
+wordcloud(names(wordcount), freq=wordcount, scale=c(6,0.3), min.freq=3, random.order = F, rot.per = 1, colors = pal2)
+```
+
+```{r}
+##mergeUserDic(data.frame(c("")))
+noun2 <- gsub(" ", "", noun2)
+noun2 <- gsub(",", "", noun2)
+noun2 <- gsub("것", "", noun2)
+noun2 <- gsub("들", "", noun2)
+noun2 <- gsub("바", "", noun2)
+noun2 <- gsub("대한", "", noun2)
+noun2 <- gsub("이것", "", noun2)
+noun2 <- gsub("저", "", noun2)
+noun2 <- gsub("한", "", noun2)
+noun2 <- gsub("수", "", noun2)
+
+noun2 <- Filter(function(x) {nchar(x)>=2}, noun2)
+
+wordcount <- table(noun2)
+
+wordcloud(names(wordcount), freq=wordcount, scale=c(5,0.3), min.freq=1, random.order = F, rot.per = .1, colors = pal2)
+```
+
+
+```{r}
+library(XML)
+url <- "http://www.coupang.com/np/search?component=&q=%EC%97%AC%EC%84%B1%EB%A1%B1%ED%8C%A8%EB%94%A9&channel=user"
+doc <- htmlParse(url, encoding="UTF-8")
+prod_name <- xpathSApply(doc,"//ul[@id='productList']//div[@class='name']", xmlValue)
+prod_price <- xpathSApply(doc,"//ul[@id='productList']//strong[@class='price-value']", xmlValue)
+
+df <- data.frame(상품명=prod_name, 가격=prod_price)
+df
+df$상품 <- format(df$상품명, justify="left")
+df
+```
+
+
+
+
