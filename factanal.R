@@ -1,17 +1,208 @@
+# header 옵션: 첫 번째 줄을 열이름으로 인식여부(default:F)
+# header가 없으면 첫 번째 줄도 data로 인식
 data <- read.csv(file.choose(), header = T)
 head(data)
-
+# data를 attach하면 data 안의 모든 변수들이 memory상에 상주한다.
 attach(data)
 a1
 table(a1)
 table(Gender)
-test1 <-subset(data, select =c("a18","a20",
+#"a17",a18","a19","a20", "a21","a22","a23","a24","a25","a26","a27","a28","a29","a30","a31","a32","a33","a34"
+test1 <-subset(data, select =c("a18","a20", 
                                "a21","a22",
                                "a23","a24","a25","a27","a28","a29","a30"
-                               ))
-head(test1)               
+))
+head(test1)       
+e_value <- eigen(cor(test1))
+e_value
 fit <- factanal(test1, factors = 2, rotation = 'varimax')
 print(fit, cutoff=0.4, digits = 3)
 
-# 내가 알고 싶은 것 종속 변수 
-# 독립변수 종속 변수에 영향을 주는 것 
+#"a1","a2","a3","a4","a5","a6","a7","a8","a9","a10","a11","a12","a13","a14", "a15","a16"
+test2 <-  subset(data, select = c("a6","a7","a8","a12","a13","a14" ))
+e_value <- eigen(cor(test2))
+e_value
+
+fit2 <- factanal(test2, factors = 1, rotation="varimax")
+print(fit2, cutoff=0.4, digit=3)
+# 6, 7, 13
+# "a35","a36", "a37","a38","a39","a40", "a41","a42","a43","a44","a45","a46","a47","a48","a49","a50","a51","a52","a53","a54","a55"
+test3 <- subset(data,, select = c("a35","a36", 
+                                  "a37","a38",
+                                  "a41","a42","a43","a44","a45"))
+e_value <- eigen(cor(test3))
+e_value
+
+fit3 <- factanal(test3, factors = 3, rotation="varimax", score = "regression")
+print(fit3, cutoff=0.4, digit=3)
+
+test4 <- subset(data, select = c("a6","a7","a8","a12","a13","a14","a18","a20","a21","a22",
+                                 "a23","a24","a25","a27","a28","a29","a30"))
+e_value <- eigen(cor(test4))
+print(e_value, digit=3)
+
+fit4 <- factanal(test4, factors = 3, rotation="varimax", score = "regression" )
+print(fit4, cutoff=0.4, digit=3)
+fit4$score
+
+# 독립변수
+#1 - 도전(6 7 8 12 13 14)
+#2 - 개인(18 23 24 25 27 29)
+#3 - 사회(20 21 22 28 30)
+# 종속변수
+#1 - 레저(35 36)
+#2 - 운동(37 38)
+#3 - 취미(41 42 43 44 45)
+
+IND1 <- (a6+a7+a8+a12+a13+a14)/5 
+IND2 <- (a18+a23+a24+a25+a27+a29)/6
+IND3 <- (a20+a21+a22+a28+a30)/5
+DP1 <- (a35+a36)/2
+DP2 <- (a37+a38)/2
+DP3 <- (a41+a42+a43+a44+a45)/5
+
+head(data)
+DT <- cbind(data,IND1,IND2,IND3,DP1,DP2,DP3)
+head(DT)
+
+# score저장 
+INSC1 <- fit4$scores[,1]
+INSC2 <- fit4$scores[,2]
+INSC3 <- fit4$scores[,3]
+
+DPSC1 <- fit3$scores[,1]
+DPSC2 <- fit3$scores[,2]
+DPSC3 <- fit3$scores[,3]
+
+DT <- cbind(DT, INSC1,INSC2,INSC3,DPSC1,DPSC2,DPSC3)
+head(DT)
+sen <- (a1+a2+a3+a4+a5)/5
+DT <- cbind(DT,sen)
+attach(DT)
+summary(sen)
+
+DT$sen_G[sen<2.800] <- 1
+DT$sen_G[sen>=2.800&sen<3.200] <- 2
+DT$sen_G[sen>=3.200&sen<3.600] <- 3
+DT$sen_G[sen>=3.600] <- 4
+head(DT)
+
+attach(DT)
+table(sen_G)
+
+# crosstab
+
+Cros_T <- table(Gender, sen_G)
+margin.table(Cros_T, 1) # row sum
+margin.table(Cros_T, 2) # column sum 
+margin.table(Cros_T) # total
+# 하나하나는 관측빈도
+chisq.test(Cros_T)
+
+install.packages("gmodels")
+library(gmodels)
+CrossTable(Cros_T, expected=TRUE, prop.c = FALSE, prop.r=FALSE, prop.t=FALSE, )
+head(DT)  
+
+# independent sample t test (독립표본 t검정)
+var.test(DP1~Gender)
+var.test(DP2~Gender)
+var.test(DP3~Gender)
+
+t.test(DP1~Gender, alt="two.sided", var.eq=F)
+t.test(DP2~Gender, alt="two.sided", var.eq=F)
+t.test(DP3~Gender, alt="two.sided", var.eq=F)
+
+var.test(IND1~Gender)
+var.test(IND2~Gender)
+var.test(IND3~Gender)
+
+t.test(IND1~Gender, alt="two.sided", var.eq=T)
+t.test(IND2~Gender, alt="two.sided", var.eq=T)
+t.test(IND3~Gender, alt="two.sided", var.eq=T)
+
+# 종속표본 paired t test 사후-사후검정
+
+t.test(a1, a2, alt="two.sided")
+
+# 
+install.packages("psych")
+library(psych)
+describeBy(IND1, Gender)
+describeBy(IND2, Gender)
+describeBy(IND3, Gender)
+describeBy(DP1, Gender)
+describeBy(DP2, Gender)
+describeBy(DP3, Gender)
+
+describeBy(IND1, sen_G)
+describeBy(IND2, sen_G)
+describeBy(IND3, sen_G)
+describeBy(DP1, sen_G)
+describeBy(DP2, sen_G)
+describeBy(DP3, sen_G)
+
+# one-way ANOVA
+
+FV1 <- aov(DP1~sen_G, data=DT)
+summary(FV1)
+FV2 <- aov(DP2~sen_G, data=DT)
+summary(FV2)
+FV3 <- aov(DP3~sen_G, data=DT)
+summary(FV3)
+
+# Scheffe's Multiple Comparison
+install.packages("doBy")
+install.packages("agricolae")
+library(doBy)
+library(agricolae)
+# "" 따옴표 안에 넣어줘야 한다. 
+scheffe.test(FV2, "sen_G", alpha=0.05, console=TRUE)
+scheffe.test(FV3, "sen_G", alpha=0.05, console=TRUE)
+
+duncan.test(FV2, "sen_G", alpha=0.05, console=TRUE)
+duncan.test(FV3, "sen_G", alpha=0.05, console=TRUE)
+
+# Two-way ANOVA 이원변량분석 / 주효과, 상호작용효과
+# aov(DP1~sen_G+Gender+ ) or sen_G*Gender or sen_G:Gender
+FFV1 <- aov(DP1~Gender+sen_G+Gender:sen_G)
+summary(FFV1)
+
+FFV2 <- aov(DP2~Gender+sen_G+Gender*sen_G)
+summary(FFV2)
+
+FFV3 <- aov(DP3~Gender+sen_G+Gender:sen_G)
+summary(FFV3)
+
+# correlation Analysis
+
+cor(DP1, DP2)
+COR_T <- subset(DT, select=c(IND1,IND2,IND3,DP1,DP2,DP3))
+cor(COR_T, method="pearson")
+
+# scatter plot 
+plot(DP2, DP3, pch=34)
+
+# Multiple Regression
+reg1 <- lm(DP1~IND1+IND2+IND3, data=DT)
+summary(reg1)
+
+reg2 <- lm(DP2~IND1+IND2+IND3, data=DT)
+summary(reg2)
+
+reg3 <- lm(DP3~IND1+IND2+IND3, data=DT)
+summary(reg3)
+# Normal Q-Q 45도 선을 잘 따라갈수록 정제를 잘 했다. Residuals vs Fitted가 패턴이 보이면 안 좋다
+par(mfrow=c(2,2))
+plot(reg1)
+
+resid <- residuals(reg1)
+# 정규성을 따르는지 안 따르는지 
+shapiro.test(resid)
+
+install.packages("car")
+library(car)
+# 10 넘어가면 안 된다 
+vif(reg2)
+# 확인해야 할 것 잔차가 등분산 되는지 /Normal Q-Q/잔차 정규성 검증 /VIP 다중공산성/ 이상치 측 
+
