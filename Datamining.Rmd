@@ -4,18 +4,27 @@ output: html_document
 ---
 
 ```{r}
-install.packages("KoNLP")
+install.packages()
 ```
 
-## Datamining
+### Datamining 
 
- 지도학습 - Prediction, Estimation / 비지도학습 - Pattern,Rule, Groupingm, Dimension Reduction, Video, Image, Text, Signal processing 
- Prediction - Linear Regression, Regression Tree, Model Tree, SVM(Support Vector Machine), Neural Network, Deep Learning, ARIMA, Exponential smoothing
- Estimation - Decision Tree, Logistic Regression, Discriminant Analysis, k-NN(k-Nearest neighbor), CBR(Case-Based Reasoning), Naive Bayes Classification, SVM, Neural Network, Ensemble(Bagging, Boosting, Random Forest)
- Pattern, Rule - Association Rule Analysis, Sequence Analysis, Network Analysis, Link Analysis, Graph theory, Structural Equation Modeling, Path Analysis 
- Grouping - k-Means Clustring, Fuzzy Clustring, SOM(self-Organizing Map)
- Dimension Resduction - PCA, Factor Analysis, SVD 
- video, Image, Text, Singnal processing - Wavelet/fast fourier Transformation, DTW, SAX, Line/Circular Hough Transformation, Text mining, Sentiment Analysis 
+## 지도학습 - Prediction, Estimation  
+
+#Prediction - Linear Regression, Regression Tree, Model Tree, SVM(Support Vector Machine), Neural Network, Deep Learning, ARIMA, Exponential smoothing
+
+#Estimation - Decision Tree, Logistic Regression, Discriminant Analysis, k-NN(k-Nearest neighbor), CBR(Case-Based Reasoning), Naive Bayes Classification, SVM, Neural Network, Ensemble(Bagging, Boosting, Random Forest)
+
+## 비지도학습 - Pattern,Rule, Groupingm, Dimension Reduction, Video, Image, Text, Signal processing 
+
+#Pattern, Rule - Association Rule Analysis, Sequence Analysis, Network Analysis, Link Analysis, Graph theory, Structural Equation Modeling, Path Analysis 
+
+#Grouping - k-Means Clustring, Fuzzy Clustring, SOM(self-Organizing Map)
+
+#Dimension Resduction - PCA, Factor Analysis, SVD 
+
+#video, Image, Text, Singnal processing - Wavelet/fast fourier Transformation, DTW, SAX, Line/Circular Hough Transformation, Text mining, Sentiment Analysis  
+ 
 ```{r cars}
 summary(cars)
 ```
