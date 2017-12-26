@@ -1,0 +1,88 @@
+---
+title: "Network"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r Network}
+install.packages("igraph")
+library(igraph)
+g_star <- graph(edge=NULL, n=NULL, directed=FALSE)
+g_star <- g_star + vertex("A",shape="circle",size=30,color="purple")
+g_star <- g_star + vertices("B", "C", "D", "E", "F",shape="circle", size=30)
+# 선 연결
+g_star <- g_star + edge("A","B")
+g_star <- g_star + edges("A","C","A","D","A", "E","A", "F")
+plot(g_star)
+
+```
+
+## Network 1
+
+
+
+```{r Network1}
+#install.packages("igraph")
+library(igraph)
+g_star <- graph(edge=NULL, n=NULL, directed=FALSE)
+g_star <- g_star + vertex("A",shape="circle",size=15,color="purple")
+g_star <- g_star + vertices("B", "C", "D", "E", "F","G","H","I","J","K","L","M",shape="circle", size=15)
+g_star <- g_star + edges("A","B","B","C","B","D","D","E","E","F","E","G","E","H","G","K","G","J","G","L","J","M","L","M","H","I")
+plot(g_star)
+# 각 노드의 연결 정도 중심성
+degree(g_star, normalized = FALSE)
+# 정규화된 연결 중심성
+degree(g_star, normalized = TRUE)
+# 이론적 연결 정도 중심화 최댓값
+tmax <- centr_degree_tmax(g_star)
+# 정규화된 연결 정도 중심화
+centralization.degree(g_star,normalized = FALSE)$centralization/tmax
+```
+
+## Network 2 
+```{r Network2}
+#install.packages("igraph")
+library(igraph)
+g_A <- graph(edge=NULL, n=NULL, directed=FALSE)
+g_A <- g_A + vertex("A",shape="circle",size=15,color="purple")
+g_A <- g_A + vertices("B", "C", "D", "E", "F","G","H","K","L","M",shape="circle", size=15)
+g_A <- g_A + edges("A","B","A","C","A","D","B","H","B","C","D","C","D","E","C","E","C","F","E","F","E","M","F","G","F","K","G","L","G","H","M","K")
+plot(g_A)
+# 각 노드의 연결 정도 중심성
+degree(g_A, normalized = FALSE)
+# 정규화된 연결 중심성
+degree(g_A, normalized = TRUE)
+# 이론적 연결 정도 중심화 최댓값
+tmax <- centr_degree_tmax(g_A)
+# 정규화된 연결 정도 중심화
+centralization.degree(g_A,normalized = FALSE)$centralization/tmax
+# 근접중심성 
+closeness(g_star, normalized=FALSE)
+closeness(g_star, normalized=TRUE)
+tmax <- centralization.closeness.tmax(g_star)
+centralization.closeness(g_star, normalized=FALSE)$centralization/tmax
+
+closeness(g_A, normalized=FALSE)
+closeness(g_A, normalized=TRUE)
+tmax <- centralization.closeness.tmax(g_A)
+centralization.closeness(g_A, normalized=FALSE)$centralization/tmax
+
+# 중개성 
+betweenness(g_star, normalized=FALSE)
+betweenness(g_star, normalized=TRUE)
+tmax <- centralization.betweenness.tmax(g_star)
+centralization.betweenness(g_star, normalized=FALSE)$centralization/tmax
+
+betweenness(g_A, normalized=FALSE)
+betweenness(g_A, normalized=TRUE)
+tmax <- centralization.betweenness.tmax(g_A)
+centralization.betweenness(g_A, normalized=FALSE)$centralization/tmax
+
+# 밀도 
+
+graph.density(g_star)
+graph.density(g_A)
+
+```
+
