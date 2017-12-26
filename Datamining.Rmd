@@ -4,7 +4,7 @@ output: html_document
 ---
 
 ```{r}
-install.pacages("KoNLP")
+install.packages("KoNLP")
 ```
 
 ## Datamining
