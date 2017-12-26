@@ -11,7 +11,7 @@ install.packages()
 
 ## 지도학습 - Prediction, Estimation  
 
-### Prediction - Linear Regression, Regression Tree, Model Tree, SVM(Support Vector Machine), Neural Network, Deep Learning, ARIMA, Exponential smoothing
+Prediction - Linear Regression, Regression Tree, Model Tree, SVM(Support Vector Machine), Neural Network, Deep Learning, ARIMA, Exponential smoothing
 
 ### Estimation - Decision Tree, Logistic Regression, Discriminant Analysis, k-NN(k-Nearest neighbor), CBR(Case-Based Reasoning), Naive Bayes Classification, SVM, Neural Network, Ensemble(Bagging, Boosting, Random Forest)
 
