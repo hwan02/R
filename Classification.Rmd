@@ -1,0 +1,118 @@
+---
+title: "Classification"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r Classification1}
+getwd()
+spamD <- read.table('spamD.tsv', header = T, sep='\t')
+spamTrain <- subset(spamD, spamD$rgroup>=10)
+spamTest <- subset(spamD, spamD$rgroup<10)
+spamVars <- setdiff(colnames(spamD),list('rgroup','spam'))
+spamVars
+spamFormula <- as.formula(paste('spam=="spam"', paste(spamVars,collapse='+'),sep='~'))
+spamModel <- glm(spamFormula, family=binomial(link='logit'),data=spamTrain)
+spamTrain$pred <- predict(spamModel,newdata=spamTrain,type='response')
+spamTest$pred <- predict(spamModel,newdata=spamTest,type='response')
+print(with(spamTest,table(y=spam,glmPred=pred>0.5)))
+tail(spamD$spam)
+
+cM <- table(truth=spamTest$spam,prediction=spamTest$pred>0.5)
+print(cM)
+
+install.packages("rpart")
+library(rpart)
+install.packages("rpart.plot")
+library(rpart.plot)
+
+tModel <- rpart(Species~Sepal.Length+Sepal.Width+Petal.Length+Petal.Width,data=iris)
+tModel
+rpart.plot(tModel)
+
+#KNN
+
+head(iris)
+table(iris$Species)
+summary(iris)
+
+install.packages("ggvis")
+library(ggvis)
+iris %>% ggvis(~Petal.Length, ~Petal.Width, fill=~factor(Species)) %>%layer_points()
+
+# 정규화 
+min_Max_normalizer <- function(x){
+  num <- x-min(x)
+  denon <- max(x)-min(x)
+  return(num/denon)
+}
+normalized_iris <- as.data.frame(lapply(iris[1:4], min_Max_normalizer))
+summary(normalized_iris)
+set.seed(1234)
+random_sample <- sample(2, nrow(iris), replace=TRUE, prob=c(0.67, 0.33))
+iris.training <- iris[random_sample==1, 1:4]
+iris.test <- iris[random_sample==2, 1:4]
+iris.testLabels <- iris[random_sample==2, 5]
+
+# install.packages("class")
+library(class)
+iris_Model <- knn(train=iris.training, test=iris.test, cl=iris.testLabels, k=3)
+iris_Model
+
+# install.packages("gmodels")
+library(gmodels)
+CrossTable(x=iris.testLabels, y=iris_Model, expected=FALSE, prop.c=FALSE, prop.r=FALSE, prop.t=FALSE, prop.chisq=TRUE)
+
+# k-means 
+kmean_iris <- iris
+kmean_iris$Species <- NULL
+(clusters <- kmeans(kmean_iris, 3))
+table(iris$Species, clusters$cluster)
+
+plot(kmean_iris[c("Sepal.Length", "Sepal.Width")],
+     col=clusters$cluster, pch=c(15,16,17)[as.numeric(clusters$cluster)])
+
+
+# random forest
+
+# install.packages("randomForest") # 랜덤포레스트 모델
+# install.packages("caret") # 특징선택
+# install.packages("e1071") # 모델튜닝
+# install.packages("ROCR") # 모델평가
+
+library(randomForest)
+library(caret)
+library(e1071)
+library(ROCR)
+
+data_F <- read.table(file.choose(), header=T, sep="\t")
+formula.init <- ("spam ~.")
+formula.init <- as.formula(formula.init)
+rf_Model <- randomForest(formula.init, data=data_F, importance=T, proximity=T)
+print(rf_Model)
+test.class.var <- data_F[,58]
+rf.prediction <- predict(rf_Model, type="class")
+confusionMatrix(data=rf.prediction, reference=test.class.var, positive=NULL)
+
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
